@@ -54,9 +54,24 @@ export function useGoalRepository() {
         return result.getFirstSync();
     }
 
+    function deleteGoal(id: number) {
+        try {
+            const deleteStatement = database.prepareSync(`
+                DELETE FROM goals WHERE id = $id;
+            `);
+            const result = deleteStatement.executeSync({ $id: id });
+            return result; // Indica que a exclusão foi bem-sucedida
+        } catch (error) {
+            console.error("Erro ao excluir meta:", error);
+            return false; // Indica que ocorreu um erro ao excluir a meta
+        }
+    }
+
+
     return {
         create,
         all,
         show,
+        deleteGoal
     }
 }

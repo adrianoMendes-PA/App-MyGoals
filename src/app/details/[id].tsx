@@ -21,6 +21,10 @@ import { TransactionTypeSelect } from "@/components/TransactionTypeSelect"
 import { mocks } from "@/utils/mocks"
 import { currencyFormat } from "@/utils/currencyFormat"
 
+//DATABASE
+import { useGoalRepository } from "@/database/useGoalRepository"
+import { useTransactionRepository } from "@/database/useTransictionRepository"
+
 type Details = {
   name: string
   total: string
@@ -39,6 +43,10 @@ export default function Details() {
   const routeParams = useLocalSearchParams()
   const goalId = Number(routeParams.id)
 
+  //DATABASE
+  const useGoal = useGoalRepository()
+  const useTransaction = useTransactionRepository()
+
   // BOTTOM SHEET
   const bottomSheetRef = useRef<Bottom>(null)
   const handleBottomSheetOpen = () => bottomSheetRef.current?.expand()
@@ -47,8 +55,8 @@ export default function Details() {
   function fetchDetails() {
     try {
       if (goalId) {
-        const goal = mocks.goal
-        const transactions = mocks.transactions
+        const goal = useGoal.show(goalId)
+        const transactions = useTransaction.findByGoal(goalId)
 
         if (!goal || !transactions) {
           return router.back()
@@ -84,7 +92,7 @@ export default function Details() {
         amountAsNumber = amountAsNumber * -1
       }
 
-      console.log({ goalId, amount: amountAsNumber })
+      useTransaction.create({ goalId, amount: amountAsNumber })
 
       Alert.alert("Sucesso", "Transação registrada!")
 
@@ -93,6 +101,7 @@ export default function Details() {
 
       setAmount("")
       setType("up")
+      fetchDetails()
     } catch (error) {
       console.log(error)
     }
